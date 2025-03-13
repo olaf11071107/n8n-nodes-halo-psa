@@ -24,7 +24,7 @@ export interface IResource {
 
 export interface ICredentialsDataHaloPsaApi {
 	baseUrl: string;
-	apiKey: string;
+	tenant: string;
 	clientId: string;
 	clientSecret: string;
 }

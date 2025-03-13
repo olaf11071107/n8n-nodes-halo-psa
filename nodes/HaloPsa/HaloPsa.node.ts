@@ -1409,7 +1409,7 @@ export class HaloPsa implements INodeType {
 		}
 
 		const baseUrl = credentials.baseUrl as string;
-		const apiKey = credentials.apiKey as string;
+		const tenant = credentials.tenant as string;
 		const clientId = credentials.clientId as string;
 		const clientSecret = credentials.clientSecret as string;
 
@@ -1451,38 +1451,11 @@ export class HaloPsa implements INodeType {
 				// Handle query parameters for GET operations
 				let qs: IDataObject = {};
 				if (method === 'GET') {
-					// Define resource operation map with proper type
-					const resourceOperationMap: Record<string, string[]> = {
-						'tickets': ['createTicket', 'getTickets'],
-						'client': ['createClient', 'updateClientPaymentMethod'],
-						'actions': ['createAction'],
-						'appointment': ['createAppointment'],
-						'asset': ['createAsset'],
-						'supplier': ['createSupplier'],
-						'crmNote': ['createCRMNote'],
-						'attachment': ['createAttachment', 'uploadAttachmentImage', 'getS3PresignedURL', 'getAttachmentImage'],
-						'report': ['createReport'],
-						'addressbook': ['createAddressBookEntry'],
-						'contract': ['createClientContract', 'createSupplierContract'],
-						'audit': ['getAuditLogs'],
-						'callLog': ['getCallLogs'],
-						'certificate': ['getCertificates'],
-						'costCentres': ['getCostCentres'],
-					};
-
-					// Check if we have simplified fields for this resource and operation
-					if (resource in resourceOperationMap && resourceOperationMap[resource].includes(operation)) {
-						const simpleFields = this.getNodeParameter('simpleFields', i, {}) as IDataObject;
-						
-						// Add simple fields to query parameters
-						qs = { ...qs, ...simpleFields };
-					}
-
 					// Add additional fields
 					const additionalFields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
 					qs = { ...qs, ...additionalFields };
 
-					// Add custom query parameters
+					// Add custom query parameters if specified
 					const jsonParameters = this.getNodeParameter('jsonParameters', i, false) as boolean;
 					if (jsonParameters) {
 						const queryParameters = this.getNodeParameter('queryParameters', i, '') as string | IDataObject;
@@ -1499,44 +1472,9 @@ export class HaloPsa implements INodeType {
 				// Handle body for POST, PUT, PATCH operations
 				let body: IDataObject = {};
 				if (['POST', 'PUT', 'PATCH'].includes(method)) {
-					// Define resource operation map with proper type
-					const resourceOperationMap: Record<string, string[]> = {
-						'tickets': ['createTicket', 'getTickets'],
-						'client': ['createClient', 'updateClientPaymentMethod'],
-						'actions': ['createAction'],
-						'appointment': ['createAppointment'],
-						'asset': ['createAsset'],
-						'supplier': ['createSupplier'],
-						'crmNote': ['createCRMNote'],
-						'attachment': ['createAttachment', 'uploadAttachmentImage', 'getS3PresignedURL', 'getAttachmentImage'],
-						'report': ['createReport'],
-						'addressbook': ['createAddressBookEntry'],
-						'contract': ['createClientContract', 'createSupplierContract'],
-						'audit': ['getAuditLogs'],
-						'callLog': ['getCallLogs'],
-						'certificate': ['getCertificates'],
-						'costCentres': ['getCostCentres'],
-					};
-
-					// Check if we have simplified fields for this resource and operation
-					if (resource in resourceOperationMap && resourceOperationMap[resource].includes(operation)) {
-						const simpleFields = this.getNodeParameter('simpleFields', i, {}) as IDataObject;
-						
-						// Add simple fields to body
-						body = { ...body, ...simpleFields };
-					}
-
-					// Add custom body parameters
-					const jsonParameters = this.getNodeParameter('jsonParameters', i, false) as boolean;
-					if (jsonParameters) {
-						const bodyParameters = this.getNodeParameter('bodyParameters', i, '') as string | IDataObject;
-						if (bodyParameters) {
-							if (typeof bodyParameters === 'string') {
-								body = { ...body, ...JSON.parse(bodyParameters) };
-							} else {
-								body = { ...body, ...bodyParameters };
-							}
-						}
+					const jsonRequestBody = this.getNodeParameter('jsonRequestBody', i, '') as string;
+					if (jsonRequestBody) {
+						body = JSON.parse(jsonRequestBody);
 					}
 				}
 				
@@ -1573,7 +1511,7 @@ export class HaloPsa implements INodeType {
 							url: `${baseUrl}${endpoint}`,
 							qs,
 							headers: {
-								'Authorization': `Bearer ${apiKey}`,
+								'X-Tenant': tenant,
 								'X-HaloPSA-ClientId': clientId,
 								'X-HaloPSA-ClientSecret': clientSecret,
 							},
@@ -1588,7 +1526,7 @@ export class HaloPsa implements INodeType {
 							qs,
 							headers: {
 								'Content-Type': 'application/json',
-								'Authorization': `Bearer ${apiKey}`,
+								'X-Tenant': tenant,
 								'X-HaloPSA-ClientId': clientId,
 								'X-HaloPSA-ClientSecret': clientSecret,
 							},
@@ -1604,7 +1542,7 @@ export class HaloPsa implements INodeType {
 						qs,
 						headers: {
 							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${apiKey}`,
+							'X-Tenant': tenant,
 							'X-HaloPSA-ClientId': clientId,
 							'X-HaloPSA-ClientSecret': clientSecret,
 						},

@@ -18,15 +18,12 @@ export class HaloPsaApi implements ICredentialType {
 			description: 'The URL of your Halo PSA instance',
 		},
 		{
-			displayName: 'API Key',
-			name: 'apiKey',
+			displayName: 'Tenant',
+			name: 'tenant',
 			type: 'string',
-			typeOptions: {
-				password: true,
-			},
 			default: '',
 			required: true,
-			description: 'The API key for authentication',
+			description: 'Your Halo PSA tenant name',
 		},
 		{
 			displayName: 'Client ID',
